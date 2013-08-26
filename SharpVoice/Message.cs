@@ -79,23 +79,22 @@ namespace SharpVoice
         public string phoneNumber { get; set; }
 
         [DataMember(Name = "displayNumber")]
-        internal string displayNumber { get; set; }
-        public string DisplayNumber { get { return this.displayNumber; } }
+        public string DisplayNumber { get; private set; }
 
         [DataMember]
-        public string startTime { get; set; }
+        public string startTime { get; private set; }
 
         [DataMember]
-        public string displayStartDateTime { get; set; }
+        public string displayStartDateTime { get; private set; }
 
         [DataMember]
-        public string displayStartTime { get; set; }
+        public string displayStartTime { get; private set; }
 
         [DataMember(Name = "relativeStartTime")]
-        public string relativeStartTime { get; set; }
+        public string relativeStartTime { get; private set; }
 
         [DataMember(Name = "note")]
-        public string Note { get; set; }
+        public string Note { get; private set; }
 
         [DataMember(Name = "isRead")]
         private bool isRead { get; set; }
@@ -113,10 +112,10 @@ namespace SharpVoice
         }
 
         [DataMember(Name = "isSpam")]
-        public bool IsSpam { get; set; }
+        public bool IsSpam { get; private set; }
 
         [DataMember(Name = "isTrash")]
-        public bool IsTrash { get; set; }
+        public bool IsTrash { get; private set; }
 
         [DataMember(Name = "star")]
         internal bool star { get; set; }
@@ -134,25 +133,21 @@ namespace SharpVoice
         }
 
         [DataMember(Name = "messageText")]
-        public string Text { get; set; }
+        public string Text { get; private set; }
 
         [DataMember(Name = "labels")]
-        public string[] Labels { get; set; }
+        public string[] Labels { get; private set; }
 
         [DataMember(Name = "hasMp3")]
-        internal bool hasMp3 { get; set; }
-        public bool HasMP3 { get { return this.hasMp3; } }
+        public bool HasMP3 { get; private set; }
 
         [DataMember(Name = "duration")]
-        internal int duration { get; set; }
-        public int Duration { get { return this.duration; } }
+        public int Duration { get; private set; }
 
         [DataMember(Name = "type")]
-        internal Direction type { get; set; }
-        public Direction Type { get { return this.type; } }
+        public Direction Type { get; private set; }
 
         [DataMember(Name = "children")]
-        internal string children { get; set; }
-        public string Children { get { return this.children; } }
+        public string Children { get; private set; }
     }
 }

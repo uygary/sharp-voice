@@ -21,6 +21,8 @@ namespace SharpVoice
 		private static CookieCollection cookies = new CookieCollection();
         public static CookieContainer cookiejar = new CookieContainer();
 
+        public static int MaxPages = 9999;
+
         /*
 		 * Links Imported from https://pygooglevoice.googlecode.com/hg/googlevoice/settings.py
 		 * Made to be more compatible with porting future python code.
@@ -124,7 +126,7 @@ namespace SharpVoice
 		missed - Messages not received
 		*/
 
-		#region java translated functions
+		#region Folders
         private string getInbox()
         {
             return getInbox(1);
@@ -178,48 +180,43 @@ namespace SharpVoice
             return Request(dict["XML_VOICEMAIL"] + "?page=p" + page);
         }
 
-        Folder _all;
         public Folder All
         {
             get
             {
-                if (_all == null || _all.NeedsUpdate)
-                    _all = buildFolder(FolderType.All);
-                return _all;
+                return this.GetFolder(FolderType.All);
             }
         }
 
-        Folder _inbox;
         public Folder Inbox
         {
             get
             {
-                if (_inbox == null || _inbox.NeedsUpdate)
-                    _inbox = buildFolder(FolderType.Inbox);
-                return _inbox;
+                return this.GetFolder(FolderType.Inbox);
             }
         }
 
-        Folder _sms;
         public Folder SMS
         {
             get
             {
-                if (_sms == null || _sms.NeedsUpdate)
-                    _sms = buildFolder(FolderType.SMS);
-                return _sms;
+                return this.GetFolder(FolderType.SMS);
             }
         }
 
-        Folder _voicemail;
         public Folder Voicemail
         {
             get
             {
-                if (_voicemail == null || _voicemail.NeedsUpdate)
-                    _voicemail = buildFolder(FolderType.Voicemail);
-                return _voicemail;
+                return this.GetFolder(FolderType.Voicemail);
             }
+        }
+
+        private Folder buildFolder(FolderType t)
+        {
+            Folder returnFolder = null;
+            buildFolder(t, ref returnFolder);
+            return returnFolder;
         }
 
         /// <summary>
@@ -227,10 +224,12 @@ namespace SharpVoice
         /// </summary>
         /// <param name="t">Folder type (All, Inbox, SMS, Unread, or Voicemail)</param>
         /// <returns>Folder for specified type</returns>
-        private Folder buildFolder(FolderType t)
+        private void buildFolder(FolderType t, ref Folder returnFolder)
         {
-            Folder tmp, returnFolder = null;
             int page = 0;
+            bool seen = false;
+            Folder tmp = null;
+            Folder staging = returnFolder;
             do
             {
                 page++;
@@ -261,20 +260,56 @@ namespace SharpVoice
                 string json = xd.SelectSingleNode("//response/json").InnerText;
                 tmp = JsonConvert.DeserializeObject<Folder>(json);
 
-                if (page == 1)
-                    returnFolder = tmp;
+                if (page == 1 && returnFolder == null)
+                {
+                    staging = tmp;
+                }
                 else
+                {
                     foreach (Message m in tmp.Messages)
-                        returnFolder[m.ID] = m;
-            } while (tmp.Messages.Length >= returnFolder.ResultsPerPage);
+                    {
+                        if (returnFolder != null && returnFolder[m.ID] != null)
+                        {
+                            seen = true;
+                            break;
+                        }
+                        staging[m.ID] = m;
+                    }
+                }
+            } while (tmp.Messages.Length >= staging.ResultsPerPage && !seen && page < MaxPages);
 
-            returnFolder.LastUpdate = DateTime.Now;
-            returnFolder.voiceConnection = this;
-            foreach (Message m in returnFolder.Messages)
+            staging.LastUpdate = DateTime.Now;
+            staging.voiceConnection = this;
+            staging.Type = t;
+            foreach (Message m in staging.Messages)
                 m.connection = this;
-            return returnFolder;
+            returnFolder = staging;
         }
-        
+
+        List<Folder> FolderCollection = new List<Folder>();
+        Folder GetFolder(FolderType t)
+        {
+            Folder folder = FolderCollection.Find(f => f.Type == t);
+
+            if (folder != null)
+            {
+                Debug.WriteLine("Get existing folder");
+                if (folder.NeedsUpdate)
+                {
+                    int folderIndex = FolderCollection.IndexOf(folder);
+                    buildFolder(t, ref folder);
+                    FolderCollection[folderIndex] = folder;
+                }
+            }
+            else
+            {
+                Debug.WriteLine("Get new folder");
+                folder = buildFolder(t);
+                FolderCollection.Add(folder);
+            }
+            return folder;
+        }
+
 		#endregion
 
         private static Dictionary<string, string> get_post_vars()

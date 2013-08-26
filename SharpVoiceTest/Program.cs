@@ -26,6 +26,7 @@ namespace GoogleTests
                 Form.ShowDialog();
                 */
 
+                #region persistance
                 string cookieData = "cookie.dat";
 
                 var formatter = new BinaryFormatter();
@@ -33,6 +34,7 @@ namespace GoogleTests
                 if (File.Exists(cookieData))
                     using (Stream s = File.OpenRead(cookieData))
                         Voice.cookiejar = formatter.Deserialize(s) as System.Net.CookieContainer;
+                #endregion
 
                 ConsoleKeyInfo c = new ConsoleKeyInfo();
                 string email = "", password = "", smsPin = "";
@@ -41,6 +43,8 @@ namespace GoogleTests
                 email = Console.ReadLine();
 
                 Console.Write("Password: ");
+
+                // read text and don't show the letters being typed
                 while(c.Key != ConsoleKey.Enter)
                 {
                     c = Console.ReadKey(true);
@@ -70,19 +74,29 @@ namespace GoogleTests
                 string msg = Console.ReadLine();
                 v.SendSMS(to, msg);
                 */
+                Voice.MaxPages = 10;
 
-                foreach (SharpVoice.Message m in v.Inbox.Messages)
-                    m.Archive(true);
+                // Testing SMS
+                foreach (SharpVoice.Message m in v.SMS.Messages)
+                    Console.WriteLine(string.Format("{0} - {1}",m.DisplayNumber,m.Text));
 
+                #region persistance
                 using (Stream s = File.Create(cookieData))
                     formatter.Serialize(s, Voice.cookiejar);
+                #endregion
 
-                //Console.Read();
+                Console.WriteLine("Done");
+                Console.Read();
 		    } catch (Exception e) {
                 Console.WriteLine(e);
                 //MessageBox.Show(e.Message);//more Debug help
                 Console.Read();
 		    }
+        }
+
+        static string Log(string message)
+        {
+            return string.Format("[{0}] {1}", DateTime.Now, message);
         }
     }
 }

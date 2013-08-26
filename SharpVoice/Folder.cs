@@ -81,9 +81,11 @@ namespace SharpVoice
         public const string INBOX = "inbox";
         public const string SMS = "sms";
         public const string VOICEMAIL = "voicemail";
+
+        public FolderType Type { get; set; }
     }
 
-    enum FolderType
+    public enum FolderType
     {
         All,
         Unread,
