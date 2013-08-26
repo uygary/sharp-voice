@@ -266,6 +266,11 @@ namespace SharpVoice
                 }
                 else
                 {
+                    if (returnFolder != null)
+                    {
+                        staging.ResultsPerPage = tmp.ResultsPerPage;
+                        staging.UnreadCounts = tmp.UnreadCounts;
+                    }
                     foreach (Message m in tmp.Messages)
                     {
                         if (returnFolder != null && returnFolder[m.ID] != null)
@@ -480,12 +485,13 @@ namespace SharpVoice
             return Request("sms", smsData);
 	    }
 
-		public static string MarkRead(string msgID, bool read){
-			Dictionary<string,string> data = new Dictionary<string, string>();
-			data.Add("messages", msgID);
-			data.Add("read", read?"1":"0");
-			return Request("mark",data);
-		}
+        public static string MarkRead(string msgID, bool read)
+        {
+            Dictionary<string, string> data = new Dictionary<string, string>();
+            data.Add("messages", msgID);
+            data.Add("read", read ? "1" : "0");
+            return Request("mark", data);
+        }
 
         public static string Archive(string msgID, bool archive)
         {
@@ -493,6 +499,14 @@ namespace SharpVoice
             data.Add("messages", msgID);
             data.Add("archive", archive ? "1" : "0");
             return Request("archive", data);
+        }
+
+        public static string Delete(string msgID, bool trash)
+        {
+            Dictionary<string, string> data = new Dictionary<string, string>();
+            data.Add("messages", msgID);
+            data.Add("trash", trash ? "1" : "0");
+            return Request("delete", data);
         }
 
         private static object makeRequest(string page, object data)

@@ -29,7 +29,7 @@ namespace SharpVoice
         public void Delete(bool trash)
         {
             //Moves this message to the Trash. Use message.delete(0) to move it out of the Trash.
-            throw new NotImplementedException();
+            Voice.Delete(this.ID, trash);
         }
 
         public string Download()
